@@ -10,5 +10,5 @@ Looking forward to applying these insights and driving more data-driven decision
 you can watch the full python video here:-
 https://lnkd.in/ggqZ3Dgr
 
-![Dashboard Screenshot](assets/dashboard.png)
 ![Dashboard Screenshot](assets/dashboard1.png)
+![Dashboard Screenshot](assets/dashboard.png)
