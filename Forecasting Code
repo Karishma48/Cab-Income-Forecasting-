@@ -1,0 +1,79 @@
+#Import usefull library
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+# uplode dataset
+df=pd.read_excel('date income.xlsx')
+
+df.head()
+
+df.info()
+
+df.set_index('Date',inplace=True)
+
+df.head()
+
+df.plot()
+plt.show()
+
+#Use for forecasting
+from statsmodels.tsa.stattools import adfuller
+
+test_result=adfuller(df['Amount'])
+
+def adfuller_test(Amount):
+    result=adfuller(Amount)
+    labels=['ADF Test Statistic','p-value','#Lags Used','Number of Observations Used']
+    for value,label in zip(result,labels):
+        print(label+' : '+str(value))
+    if result[1]<=0.05:
+        print('strong evidence against the null hypothesis(Ho), reject the null hypothesis. Data has null')
+    else:
+        print('weak evidence against null hypothesis, time series has a unit root, indicating it is')
+
+adfuller_test(df['Amount'])
+
+df['Amount first Difference']=df['Amount']-df['Amount'].shift(1)
+
+df['Seasonal First Defference']=df['Amount']-df['Amount'].shift(1)
+
+df.head(14)
+
+adfuller_test(df['Seasonal First Defference'].dropna())
+
+df['Seasonal First Defference'].plot(color='orange')
+plt.show()
+
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+# Fit the SARIMAX model with ARIMA configuration
+model = SARIMAX(df['Amount'], order=(1, 1, 1))  # order=(p, d, q) for ARIMA
+model_fit = model.fit()
+# Print model summary
+print(model_fit.summary())
+
+model_fit.summary()
+
+import statsmodels.api as sm
+
+model= sm.tsa.statespace.SARIMAX(df['Amount'],order=(8,1,1),seasonal_order=(1,1,1,14))
+results=model.fit()
+
+df['forecast']=results.predict(start=16,end=24)
+df[['Amount','forecast']].plot(figsize=(12,5))
+plt.show()
+
+from pandas.tseries.offsets import DateOffset
+future_dates=[df.index[-1]+ DateOffset(months=x) for x in range(0,24)]
+
+future_datest_df=pd.DataFrame(index=future_dates[1:],columns=df.columns)
+
+future_datest_df.tail()
+
+future_df=pd.concat([df,future_datest_df])
+
+future_df['forecast']=results.predict(start=22,end=48,dynamic=True)
+future_df[['Amount', 'forecast']].plot(figsize=(12,5))
+plt.show()
